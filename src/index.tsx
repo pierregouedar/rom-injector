@@ -226,7 +226,7 @@ function Content() {
     : null;
 
   return (
-    <>
+    <div key={lang}>
       <LanguagePanel lang={lang} onChange={(l) => mutate({ language: l })} t={t} />
 
       <PanelSection title="Autosave">
@@ -304,7 +304,7 @@ function Content() {
           </ButtonItem>
         </PanelSectionRow>
       </PanelSection>
-    </>
+    </div>
   );
 }
 

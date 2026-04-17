@@ -137,17 +137,19 @@ def cfg_save(cfg):
 
 
 def cfg_normalize(incoming):
+    """Sanitize whitespace but keep every user-entered row verbatim.
+
+    Empty roots/profiles are preserved so the UI can autosave while the user
+    is mid-typing. Filtering happens at scan time, not at save time.
+    """
     cfg = cfg_migrate(dict(incoming))
-    cfg["roots"] = [r.strip() for r in (cfg.get("roots") or []) if isinstance(r, str) and r.strip()]
+    cfg["roots"] = [str(r).strip() for r in (cfg.get("roots") or []) if isinstance(r, str)]
     cleaned = []
     for p in cfg.get("profiles") or []:
-        ext = norm_ext(p.get("ext", ""))
-        exe = (p.get("exe") or "").strip()
-        args = (p.get("args") or "").strip() or "{rom}"
-        if not ext or not exe:
-            continue
         cleaned.append({
-            "ext": ext, "exe": exe, "args": args,
+            "ext": norm_ext(p.get("ext", "")),
+            "exe": (p.get("exe") or "").strip(),
+            "args": (p.get("args") or "").strip() or "{rom}",
             "compat_tool": (p.get("compat_tool") or "").strip(),
         })
     cfg["profiles"] = cleaned
@@ -465,7 +467,12 @@ class Plugin:
     async def get_roms_to_sync(self):
         c = cfg_load()
         default_compat = c.get("default_compat_tool", "proton_experimental")
-        by_ext = {norm_ext(p["ext"]): p for p in c.get("profiles", [])}
+        # Filter out empty/partial profiles at scan time (saved verbatim, used selectively).
+        by_ext = {
+            norm_ext(p["ext"]): p
+            for p in c.get("profiles", [])
+            if p.get("ext") and p.get("exe")
+        }
         sgdb_key = c.get("steamgriddb_api_key") or ""
         sgdb_on = bool(c.get("steamgriddb_enabled")) and bool(sgdb_key)
         cache_root = sgdb_cache_path()
