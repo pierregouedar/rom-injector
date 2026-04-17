@@ -27,7 +27,7 @@ Optional SteamGridDB integration fetches grid / hero / logo / icon artwork autom
 On the Steam Deck in Desktop Mode:
 
 ```bash
-curl -L https://raw.githubusercontent.com/<you>/rom-injector/main/install.sh | bash
+curl -L https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh | bash
 ```
 
 Or from a clone:
