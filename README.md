@@ -22,25 +22,43 @@ Optional SteamGridDB integration fetches grid / hero / logo / icon artwork autom
 
 ## Install
 
-### Easy (script)
+The installer needs only `curl` (or `wget`), `tar`, and `systemctl` — **no node / npm / pnpm required on the Deck**. Prebuilt release tarballs are published on GitHub Releases via CI.
 
-On the Steam Deck in Desktop Mode:
-
-```bash
-curl -L https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh | bash
-```
-
-Or from a clone:
+### One-liner (pulls the latest release on the Deck, in Desktop Mode)
 
 ```bash
-./install.sh
+curl -L https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh -o /tmp/rom-injector-install.sh \
+  && bash /tmp/rom-injector-install.sh --remote
 ```
 
-### Manual
+### From a clone
 
-1. Build: `pnpm install && pnpm build`.
-2. Copy the plugin folder to `/home/deck/homebrew/plugins/rom-injector/`.
-3. Restart Decky Loader (not Steam).
+```bash
+./install.sh --remote              # download latest release, then install locally
+./install.sh --version v0.2.0      # pin a specific release
+./install.sh                       # install from the local folder (requires dist/index.js already built)
+```
+
+### Remote deploy over SSH (from your dev machine)
+
+```bash
+./install.sh --host deck@steamdeck.local --remote    # ship the release tarball to the Deck
+./install.sh --host deck@steamdeck.local             # ship the current local tree (requires local build)
+```
+
+### Uninstall
+
+```bash
+./install.sh --uninstall
+./install.sh --host deck@steamdeck.local --uninstall
+```
+
+### Building from source (developer only)
+
+Only needed if you want to modify the plugin. End users should use `--remote`.
+
+1. `pnpm install && pnpm build`
+2. `./install.sh` (copies the just-built tree — no build step inside the script).
 
 ## First-run setup
 

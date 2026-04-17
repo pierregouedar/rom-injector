@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Build frontend
+        run: pnpm build
+
+      - name: Stage release tree
+        run: |
+          set -euo pipefail
+          OUT="rom-injector"
+          mkdir -p "$OUT"
+          rsync -a \
+            --exclude node_modules --exclude .git --exclude .github \
+            --exclude '__pycache__' --exclude 'src/**/*.map' \
+            --exclude '*.tar.gz' --exclude "$OUT" \
+            ./ "$OUT/"
+          tar -czf rom-injector.tar.gz "$OUT"
+          sha256sum rom-injector.tar.gz > rom-injector.tar.gz.sha256
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            rom-injector.tar.gz
+            rom-injector.tar.gz.sha256
+          generate_release_notes: true
