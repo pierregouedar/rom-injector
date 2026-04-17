@@ -12,7 +12,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["DOM", "ES2020"]
+    "lib": ["DOM", "ES2021"]
   },
   "include": ["src/**/*"]
 }

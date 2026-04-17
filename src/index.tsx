@@ -9,7 +9,7 @@ import { FaGamepad } from "react-icons/fa";
 import { useMemo, useState } from "react";
 
 import { CefStatus, checkCefDebugging, exportConfig, importConfig, Rom } from "./backend";
-import { Lang, makeT } from "./i18n";
+import { Lang, makeT, type T } from "./i18n";
 
 import { useConfig } from "./hooks/useConfig";
 import { useLogs } from "./hooks/useLogs";
@@ -30,7 +30,7 @@ import { SgdbPanel } from "./components/SgdbPanel";
 import { ValidationPanel } from "./components/ValidationPanel";
 
 function notify(
-  t: ReturnType<typeof makeT>,
+  t: T,
   titleKey: string,
   opts?: { body?: string; bodyKey?: string; vars?: Record<string, string | number>; duration?: number },
 ) {

@@ -523,9 +523,11 @@ export function detectLang(): Lang {
   return "en";
 }
 
-export function makeT(lang: Lang) {
+export type T = (key: string, vars?: Record<string, string | number>) => string;
+
+export function makeT(lang: Lang): T {
   const dict = DICTS[lang] ?? en;
-  return (key: string, vars?: Record<string, string | number>): string => {
+  return (key, vars) => {
     let s = dict[key] ?? en[key] ?? key;
     if (vars) {
       for (const [k, v] of Object.entries(vars)) {

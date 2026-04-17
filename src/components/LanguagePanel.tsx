@@ -1,7 +1,6 @@
 import { DropdownItem, PanelSection, PanelSectionRow } from "@decky/ui";
-import { Lang, LANG_LABELS, LANGS, makeT } from "../i18n";
+import { Lang, LANG_LABELS, LANGS, type T } from "../i18n";
 
-type T = ReturnType<typeof makeT>;
 
 export function LanguagePanel({
   lang, onChange, t,

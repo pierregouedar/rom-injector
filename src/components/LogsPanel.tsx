@@ -1,7 +1,6 @@
 import { ButtonItem, PanelSection, PanelSectionRow } from "@decky/ui";
-import type { makeT } from "../i18n";
+import type { T } from "../i18n";
 
-type T = ReturnType<typeof makeT>;
 
 export function LogsPanel({ lines, t, onRefresh }: {
   lines: string[];

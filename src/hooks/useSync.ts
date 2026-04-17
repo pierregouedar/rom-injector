@@ -7,9 +7,9 @@ import {
   recordLastSync,
 } from "../backend";
 import {
-  SteamClient,
   buildExistingSet,
   extractRomPathFromLaunchOpts,
+  removeShortcut,
   snapshotShortcuts,
   syncOne,
 } from "../steam";
@@ -75,7 +75,7 @@ export function useSync() {
     for (const c of candidates) {
       if (!stale.has(c.romQuoted)) continue;
       try {
-        await SteamClient.Apps.RemoveShortcut(c.appid);
+        await removeShortcut(c.appid);
         removed++;
       } catch (e) {
         console.error("[rom-injector] RemoveShortcut failed", c.appid, e);
@@ -88,7 +88,7 @@ export function useSync() {
     const ids = await getLastSync();
     if (!ids.length) return 0;
     for (const id of ids) {
-      try { await SteamClient.Apps.RemoveShortcut(id); } catch (e) { console.error(e); }
+      try { await removeShortcut(id); } catch (e) { console.error(e); }
     }
     await clearLastSync();
     setUndoCount(0);

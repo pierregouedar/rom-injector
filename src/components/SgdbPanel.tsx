@@ -1,7 +1,6 @@
 import { ButtonItem, PanelSection, PanelSectionRow, TextField, ToggleField } from "@decky/ui";
-import type { makeT } from "../i18n";
+import type { T } from "../i18n";
 
-type T = ReturnType<typeof makeT>;
 
 export function SgdbPanel({
   apiKey, enabled, busy, t,

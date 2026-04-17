@@ -1,9 +1,8 @@
 import { ButtonItem, DialogButton, Focusable, PanelSection, PanelSectionRow, TextField } from "@decky/ui";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { EMPTY_PROFILE, Profile, ValidationReport } from "../backend";
-import type { makeT } from "../i18n";
+import type { T } from "../i18n";
 
-type T = ReturnType<typeof makeT>;
 
 export function ProfilesEditor({
   profiles, onChange, t, validation,
