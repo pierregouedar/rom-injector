@@ -131,14 +131,38 @@ copy_plugin() {
 }
 
 restart_decky() {
-  info "restarting $SERVICE"
-  if systemctl --user list-units --type=service 2>/dev/null | grep -q "$SERVICE"; then
-    systemctl --user restart "$SERVICE" && return 0
-  fi
-  if has sudo && sudo -n systemctl restart "$SERVICE" 2>/dev/null; then
+  info "restarting $SERVICE (Decky Loader)"
+  # Decky on SteamOS is a root-level systemd service, not a --user service.
+  if has sudo && sudo systemctl restart "$SERVICE" 2>/dev/null; then
+    ok "Decky restarted (root)"
     return 0
   fi
-  warn "could not restart $SERVICE automatically — toggle Decky Loader from Settings or reboot"
+  if systemctl --user list-units --type=service 2>/dev/null | grep -q "$SERVICE"; then
+    if systemctl --user restart "$SERVICE" 2>/dev/null; then
+      ok "Decky restarted (user)"
+      return 0
+    fi
+  fi
+  warn "could not restart $SERVICE automatically — run:  sudo systemctl restart $SERVICE"
+  warn "or open Settings → Decky and toggle 'Reload Plugins' / reboot"
+}
+
+postcheck() {
+  local dest="$1"
+  info "post-install check:"
+  for f in main.py plugin.json dist/index.js; do
+    if [ -f "$dest/$f" ]; then
+      color '1;32' "   ok  $f"
+    else
+      color '1;31' "   MISSING  $f"
+    fi
+  done
+  if [ -f "$dest/plugin.json" ] && ! grep -q '"api_version"' "$dest/plugin.json"; then
+    warn "   plugin.json has no api_version — Decky may ignore this plugin"
+  fi
+  local owner
+  owner="$(stat -c '%U:%G' "$dest" 2>/dev/null || stat -f '%Su:%Sg' "$dest" 2>/dev/null || echo '?')"
+  info "   owner: $owner (should be deck:deck on the Deck)"
 }
 
 ssh_run() {
@@ -195,6 +219,7 @@ local_install() {
     copy_plugin "$SCRIPT_DIR" "$PLUGIN_DIR_DEFAULT"
   fi
 
+  postcheck "$PLUGIN_DIR_DEFAULT"
   restart_decky
   ok "installed at $PLUGIN_DIR_DEFAULT"
 }
