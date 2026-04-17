@@ -1,6 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # ROM Injector — end-user installer for SteamOS / Steam Deck.
-# No node / npm / pnpm required. Only: curl (or wget), tar, rsync, systemctl.
+# POSIX sh. Needs only: sh, curl (or wget), tar, systemctl (or reboot),
+# and optionally rsync / ssh for remote deploys. No bash, no node, no npm.
 #
 # Usage:
 #   ./install.sh                       # install locally (on the Deck) from this folder
@@ -10,7 +11,7 @@
 #   ./install.sh --host <user@host> --uninstall
 #   ./install.sh --version vX.Y.Z      # pin a specific release (default: latest)
 
-set -euo pipefail
+set -eu
 
 PLUGIN_NAME="rom-injector"
 PLUGIN_DIR_DEFAULT="/home/deck/homebrew/plugins/${PLUGIN_NAME}"
@@ -19,7 +20,7 @@ GH_OWNER="pierregouedar"
 GH_REPO="rom-injector"
 RELEASE_ASSET="${PLUGIN_NAME}.tar.gz"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || echo "$PWD")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo "$PWD")"
 
 color() { printf '\033[%sm%s\033[0m\n' "$1" "$2"; }
 info()  { color '1;34' "==> $*"; }
