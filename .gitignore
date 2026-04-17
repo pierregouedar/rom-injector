@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+pnpm-lock.yaml.bak

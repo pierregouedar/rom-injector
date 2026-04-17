@@ -1,0 +1,27 @@
+{
+  "name": "rom-injector",
+  "version": "0.1.0",
+  "description": "Live ROM shortcut injector for Steam on SteamOS",
+  "scripts": {
+    "build": "shx rm -rf dist && rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@decky/api": "^1.1.2",
+    "@decky/rollup": "^1.0.1",
+    "@decky/ui": "^4.7.2",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/react": "18.3.12",
+    "react-icons": "^5.3.0",
+    "rollup": "^4.24.4",
+    "shx": "^0.3.4",
+    "tslib": "^2.8.1",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {}
+}

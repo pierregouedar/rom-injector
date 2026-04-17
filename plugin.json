@@ -1,0 +1,10 @@
+{
+  "name": "ROM Injector",
+  "author": "poc",
+  "flags": [],
+  "publish": {
+    "tags": ["tool", "emulation"],
+    "description": "Live-inject ROM shortcuts into Steam Library without restart.",
+    "image": ""
+  }
+}
