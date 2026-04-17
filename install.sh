@@ -85,11 +85,18 @@ download_release() {
   ok "release unpacked"
 }
 
-verify_build_present() {
+have_local_build() {
   local dir="$1"
-  [ -f "$dir/dist/index.js" ] || fail "missing $dir/dist/index.js — build on a dev machine (\`pnpm install && pnpm build\`) or use --remote to download a prebuilt release"
-  [ -f "$dir/main.py" ]       || fail "missing $dir/main.py"
-  [ -f "$dir/plugin.json" ]   || fail "missing $dir/plugin.json"
+  [ -f "$dir/dist/index.js" ] && [ -f "$dir/main.py" ] && [ -f "$dir/plugin.json" ]
+}
+
+ensure_source_local_or_switch_to_remote() {
+  local dir="$1"
+  if have_local_build "$dir"; then
+    return 0
+  fi
+  warn "no prebuilt tree at $dir (missing dist/index.js) — switching to --remote"
+  SOURCE="remote"
 }
 
 copy_plugin() {
@@ -139,10 +146,10 @@ remote_install() {
   staging="$(mktemp -d)"
   trap 'rm -rf "$staging"' EXIT
 
+  ensure_source_local_or_switch_to_remote "$SCRIPT_DIR"
   if [ "$SOURCE" = "remote" ]; then
     download_release "$staging"
   else
-    verify_build_present "$SCRIPT_DIR"
     info "copying local tree to staging"
     rsync -a --delete \
       --exclude node_modules --exclude .git --exclude '__pycache__' \
@@ -171,6 +178,7 @@ remote_uninstall() {
 local_install() {
   [ -d "/home/deck/homebrew" ] || warn "/home/deck/homebrew not found — is this a Steam Deck with Decky Loader?"
 
+  ensure_source_local_or_switch_to_remote "$SCRIPT_DIR"
   if [ "$SOURCE" = "remote" ]; then
     local staging
     staging="$(mktemp -d)"
@@ -178,7 +186,6 @@ local_install() {
     download_release "$staging"
     copy_plugin "$staging" "$PLUGIN_DIR_DEFAULT"
   else
-    verify_build_present "$SCRIPT_DIR"
     copy_plugin "$SCRIPT_DIR" "$PLUGIN_DIR_DEFAULT"
   fi
 
