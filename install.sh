@@ -95,6 +95,27 @@ download_release() {
   ok "release unpacked"
 }
 
+# Resolve the real plugin root inside an extracted tree.
+# Handles both flat tarballs and ones with a single wrapper dir
+# (like "rom-injector/") by checking where plugin.json actually lives.
+resolve_plugin_root() {
+  local dir="$1"
+  if [ -f "$dir/plugin.json" ]; then
+    echo "$dir"
+    return 0
+  fi
+  # Look one level deep for a single wrapper dir
+  for sub in "$dir"/*/; do
+    [ -d "$sub" ] || continue
+    if [ -f "$sub/plugin.json" ]; then
+      # strip trailing slash
+      echo "${sub%/}"
+      return 0
+    fi
+  done
+  fail "cannot find plugin.json inside $dir"
+}
+
 have_local_build() {
   local dir="$1"
   [ -f "$dir/dist/index.js" ] && [ -f "$dir/main.py" ] && [ -f "$dir/plugin.json" ]
@@ -179,20 +200,23 @@ remote_install() {
   STAGING="$(mktemp -d)"
 
   ensure_source_local_or_switch_to_remote "$SCRIPT_DIR"
+  local push_root
   if [ "$SOURCE" = "remote" ]; then
     download_release "$STAGING"
+    push_root="$(resolve_plugin_root "$STAGING")"
   else
     info "copying local tree to staging"
     rsync -a --delete \
       --exclude node_modules --exclude .git --exclude '__pycache__' \
       --exclude 'src/**/*.map' --exclude '*.tar.gz' \
       "$SCRIPT_DIR/" "$STAGING/"
+    push_root="$STAGING"
   fi
 
   info "ensuring remote plugin dir exists on $host"
   ssh_run "$host" "mkdir -p '$PLUGIN_DIR_DEFAULT'"
   info "syncing to $host:$PLUGIN_DIR_DEFAULT"
-  rsync -az --delete "$STAGING/" "$host:$PLUGIN_DIR_DEFAULT/"
+  rsync -az --delete "$push_root/" "$host:$PLUGIN_DIR_DEFAULT/"
   info "restarting Decky on $host"
   ssh_run "$host" "sudo -n systemctl restart $SERVICE 2>/dev/null || systemctl --user restart $SERVICE || true"
   ok "installed on $host"
@@ -214,7 +238,8 @@ local_install() {
   if [ "$SOURCE" = "remote" ]; then
     STAGING="$(mktemp -d)"
     download_release "$STAGING"
-    copy_plugin "$STAGING" "$PLUGIN_DIR_DEFAULT"
+    local root; root="$(resolve_plugin_root "$STAGING")"
+    copy_plugin "$root" "$PLUGIN_DIR_DEFAULT"
   else
     copy_plugin "$SCRIPT_DIR" "$PLUGIN_DIR_DEFAULT"
   fi

@@ -46,14 +46,14 @@ jobs:
       - name: Stage release tree
         run: |
           set -eu
-          OUT="rom-injector"
-          mkdir -p "$OUT"
-          # tar → tar pattern avoids rsync version skew
+          OUT="$(mktemp -d)"
+          # Flatten into OUT so the tarball has no wrapper directory —
+          # extracting it drops files directly into the current dir.
           tar cf - \
             --exclude=node_modules --exclude=.git --exclude=.github \
-            --exclude=__pycache__ --exclude='*.tar.gz' --exclude="$OUT" \
+            --exclude=__pycache__ --exclude='*.tar.gz' \
             . | tar xf - -C "$OUT"
-          tar -czf rom-injector.tar.gz "$OUT"
+          tar -czf rom-injector.tar.gz -C "$OUT" .
           sha256sum rom-injector.tar.gz > rom-injector.tar.gz.sha256
 
       - name: Publish tarball
