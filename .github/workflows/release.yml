@@ -11,8 +11,6 @@ permissions:
 
 jobs:
   installer:
-    # Uploads install.sh on every tag so `/releases/latest/download/install.sh`
-    # resolves even if the plugin build fails.
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -43,23 +41,26 @@ jobs:
       - name: Build frontend
         run: pnpm build
 
-      - name: Stage release tree
+      - name: Package release zip
         run: |
           set -eu
-          OUT="$(mktemp -d)"
-          # Flatten into OUT so the tarball has no wrapper directory —
-          # extracting it drops files directly into the current dir.
-          tar cf - \
-            --exclude=node_modules --exclude=.git --exclude=.github \
-            --exclude=__pycache__ --exclude='*.tar.gz' \
-            . | tar xf - -C "$OUT"
-          tar -czf rom-injector.tar.gz -C "$OUT" .
-          sha256sum rom-injector.tar.gz > rom-injector.tar.gz.sha256
+          # Flat zip: extracting it dumps files into the target dir
+          # with no wrapper. Match the allycenter/decky convention.
+          VERSION="${GITHUB_REF_NAME}"
+          ZIP="rom-injector-${VERSION}.zip"
+          zip -r "$ZIP" \
+            dist main.py config.py scanner.py sgdb.py logs.py \
+            plugin.json package.json LICENSE README.md \
+            -x "*.DS_Store" "*.map"
+          # Also emit a stable filename so /releases/latest/download/rom-injector.zip resolves.
+          cp "$ZIP" rom-injector.zip
+          sha256sum "$ZIP" rom-injector.zip > checksums.txt
 
-      - name: Publish tarball
+      - name: Publish zip
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            rom-injector.tar.gz
-            rom-injector.tar.gz.sha256
+            rom-injector-*.zip
+            rom-injector.zip
+            checksums.txt

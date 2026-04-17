@@ -24,23 +24,16 @@ Optional SteamGridDB integration fetches grid / hero / logo / icon artwork autom
 
 The installer needs only `curl` (or `wget`), `tar`, and `systemctl` — **no node / npm / pnpm required on the Deck**. Prebuilt release tarballs are published on GitHub Releases via CI.
 
-### One-liner — after a release exists
+### One-liner (on the Deck, Desktop Mode)
 
-```sh
+```bash
 curl -fSL https://github.com/pierregouedar/rom-injector/releases/latest/download/install.sh -o /tmp/rom-injector-install.sh \
-  && sh /tmp/rom-injector-install.sh --remote
+  && bash /tmp/rom-injector-install.sh
 ```
 
-`/releases/latest/download/install.sh` redirects to the installer attached to whichever version is tagged **latest**, so the link never needs bumping. **The `-fSL` flag is load-bearing** — without `-f`, curl silently saves the GitHub 404 body if no release exists, and running it produces misleading errors like `Not: command not found`.
+The installer queries the GitHub Releases API for the latest `.zip` asset, downloads it, unzips into `$HOME/homebrew/plugins/ROM Injector/`, runs a post-check for required files, and restarts `plugin_loader`. Enter your Deck password when sudo prompts.
 
-### Before the first release (raw `main` fallback)
-
-```sh
-curl -fSL https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh -o /tmp/rom-injector-install.sh \
-  && sh /tmp/rom-injector-install.sh --remote
-```
-
-(This one-liner works as soon as the repo has an `install.sh` on `main`, even before any tag / release.)
+> `-fSL` is load-bearing: without `-f`, curl silently saves the GitHub 404 body if no release exists.
 
 ### From a clone
 
