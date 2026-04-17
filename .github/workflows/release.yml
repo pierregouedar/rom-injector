@@ -49,8 +49,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME}"
           ZIP="rom-injector-${VERSION}.zip"
           zip -r "$ZIP" \
-            dist main.py config.py scanner.py sgdb.py logs.py \
-            plugin.json package.json LICENSE README.md \
+            dist main.py plugin.json package.json LICENSE README.md \
             -x "*.DS_Store" "*.map"
           # Also emit a stable filename so /releases/latest/download/rom-injector.zip resolves.
           cp "$ZIP" rom-injector.zip
