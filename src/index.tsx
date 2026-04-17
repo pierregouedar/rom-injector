@@ -8,7 +8,7 @@ import { definePlugin, toaster } from "@decky/api";
 import { FaGamepad } from "react-icons/fa";
 import { useMemo, useState } from "react";
 
-import { CefStatus, checkCefDebugging, exportConfig, importConfig, Rom } from "./backend";
+import { CefStatus, checkCefDebugging, debugPaths, exportConfig, importConfig, Rom } from "./backend";
 import { Lang, makeT, type T } from "./i18n";
 
 import { useConfig } from "./hooks/useConfig";
@@ -76,12 +76,28 @@ function Content() {
   };
 
   const onSave = async () => {
-    const saved = await savePersist();
-    if (!saved) return;
-    notify(t, "toast.saved.title", {
-      bodyKey: "toast.saved.body",
-      vars: { roots: saved.roots.length, profiles: saved.profiles.length },
-    });
+    try {
+      const saved = await savePersist();
+      if (!saved) return;
+      notify(t, "toast.saved.title", {
+        bodyKey: "toast.saved.body",
+        vars: { roots: saved.roots.length, profiles: saved.profiles.length },
+      });
+    } catch (e) {
+      console.error("[rom-injector] save failed", e);
+      notify(t, "toast.syncFail", { body: `save_config: ${String(e)}` });
+    }
+  };
+
+  const onDebugPaths = async () => {
+    try {
+      const info = await debugPaths();
+      const pretty = JSON.stringify(info, null, 2);
+      console.log("[rom-injector] debug_paths", info);
+      notify(t, "Paths", { body: pretty, duration: 10000 });
+    } catch (e) {
+      notify(t, "debug_paths failed", { body: String(e) });
+    }
   };
 
   const onReset = async () => {
@@ -266,6 +282,14 @@ function Content() {
       <LogsPanel lines={logs} t={t} onRefresh={refreshLogs} />
 
       <ValidationPanel cef={cef} t={t} onCheckCef={onCheckCef} onReset={onReset} />
+
+      <PanelSection title="Debug">
+        <PanelSectionRow>
+          <ButtonItem layout="below" onClick={onDebugPaths}>
+            Check Settings Paths
+          </ButtonItem>
+        </PanelSectionRow>
+      </PanelSection>
     </>
   );
 }

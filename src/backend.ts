@@ -65,5 +65,6 @@ export const getLogs            = callable<[number], string[]>("get_logs");
 export const checkCefDebugging  = callable<[], CefStatus>("check_cef_debugging");
 export const testSteamgriddbKey = callable<[string | null], { ok: boolean; error?: string }>("test_steamgriddb_key");
 export const clearSgdbCache     = callable<[], number>("clear_sgdb_cache");
+export const debugPaths         = callable<[], Record<string, unknown>>("debug_paths");
 
 export const EMPTY_PROFILE: Profile = { ext: "", exe: "", args: "{rom}", compat_tool: "" };

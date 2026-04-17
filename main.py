@@ -407,8 +407,35 @@ class Plugin:
 
     async def save_config(self, config):
         cleaned = cfg_normalize(config)
-        cfg_save(cleaned)
+        try:
+            cfg_save(cleaned)
+        except Exception as e:
+            decky.logger.error(f"save_config write failed at {config_path()}: {e}\n{traceback.format_exc()}")
+            raise
+        decky.logger.info(f"save_config wrote {config_path()} ({config_path().stat().st_size} bytes)")
         return cleaned
+
+    async def debug_paths(self):
+        """Diagnostic: settings dir + writability probe."""
+        cp = config_path()
+        settings = settings_dir()
+        info = {
+            "settings_dir": str(settings),
+            "settings_exists": settings.exists(),
+            "config_path": str(cp),
+            "config_exists": cp.exists(),
+            "config_size": cp.stat().st_size if cp.exists() else None,
+        }
+        # Try a probe write
+        probe = settings / ".rom-injector-probe"
+        try:
+            settings.mkdir(parents=True, exist_ok=True)
+            probe.write_text(str(int(time.time())))
+            info["probe_write"] = "ok"
+            probe.unlink()
+        except Exception as e:
+            info["probe_write"] = f"FAILED: {type(e).__name__}: {e}"
+        return info
 
     async def reset_config(self):
         fresh = json.loads(json.dumps(DEFAULT_CONFIG))
