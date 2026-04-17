@@ -1,7 +1,8 @@
 import { ButtonItem, DialogButton, Focusable, PanelSection, PanelSectionRow, TextField } from "@decky/ui";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaFolderOpen, FaPlus, FaTrash } from "react-icons/fa";
 import type { ValidationReport } from "../backend";
 import type { T } from "../i18n";
+import { pickFolder } from "../steam";
 
 
 export function RootsEditor({
@@ -32,6 +33,19 @@ export function RootsEditor({
                   }}
                 />
               </div>
+              <DialogButton
+                style={{ minWidth: 40, width: 40, padding: 8 }}
+                onClick={async () => {
+                  const picked = await pickFolder(r || "/home/deck/Emulation");
+                  if (picked) {
+                    const next = roots.slice();
+                    next[i] = picked;
+                    onChange(next);
+                  }
+                }}
+              >
+                <FaFolderOpen />
+              </DialogButton>
               <DialogButton
                 style={{ minWidth: 40, width: 40, padding: 8 }}
                 onClick={() => onChange(roots.filter((_, j) => j !== i))}

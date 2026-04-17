@@ -1,4 +1,29 @@
+import { openFilePicker } from "@decky/api";
 import type { Artwork, Rom } from "./backend";
+
+// FileSelectionType is a const enum; inline literals to dodge import issues.
+const FILE_TYPE_FILE = 0;
+const FILE_TYPE_FOLDER = 1;
+
+export async function pickFolder(startPath: string): Promise<string | null> {
+  try {
+    const res = await openFilePicker(FILE_TYPE_FOLDER, startPath, false, true);
+    return res?.path ?? null;
+  } catch (e) {
+    console.warn("[rom-injector] pickFolder cancelled/failed", e);
+    return null;
+  }
+}
+
+export async function pickFile(startPath: string, extensions?: string[]): Promise<string | null> {
+  try {
+    const res = await openFilePicker(FILE_TYPE_FILE, startPath, true, false, undefined, extensions);
+    return res?.path ?? null;
+  } catch (e) {
+    console.warn("[rom-injector] pickFile cancelled/failed", e);
+    return null;
+  }
+}
 
 export type ShortcutEntry = {
   appid: number;
