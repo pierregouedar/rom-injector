@@ -50,4 +50,5 @@ jobs:
           files: |
             rom-injector.tar.gz
             rom-injector.tar.gz.sha256
+            install.sh
           generate_release_notes: true

@@ -27,6 +27,13 @@ The installer needs only `curl` (or `wget`), `tar`, and `systemctl` — **no nod
 ### One-liner (pulls the latest release on the Deck, in Desktop Mode)
 
 ```bash
+curl -L https://github.com/pierregouedar/rom-injector/releases/latest/download/install.sh -o /tmp/rom-injector-install.sh \
+  && bash /tmp/rom-injector-install.sh --remote
+```
+
+The link above redirects to whichever version is currently tagged **latest** on GitHub — no manual bumping needed. The script fetches the matching tarball the same way. If you haven't published a release yet, fall back to the `main` branch script:
+
+```bash
 curl -L https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh -o /tmp/rom-injector-install.sh \
   && bash /tmp/rom-injector-install.sh --remote
 ```
