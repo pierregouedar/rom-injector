@@ -22,6 +22,15 @@ RELEASE_ASSET="${PLUGIN_NAME}.tar.gz"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" 2>/dev/null && pwd || echo "$PWD")"
 
+# Global scratch dir used by staged flows; cleaned on exit.
+STAGING=""
+cleanup() {
+  if [ -n "${STAGING:-}" ] && [ -d "${STAGING}" ]; then
+    rm -rf "${STAGING}"
+  fi
+}
+trap cleanup EXIT
+
 color() { printf '\033[%sm%s\033[0m\n' "$1" "$2"; }
 info()  { color '1;34' "==> $*"; }
 ok()    { color '1;32' "==> $*"; }
@@ -143,25 +152,23 @@ remote_install() {
   has ssh   || fail "ssh required locally for --host"
   has rsync || fail "rsync required locally for --host"
 
-  local staging
-  staging="$(mktemp -d)"
-  trap 'rm -rf "$staging"' EXIT
+  STAGING="$(mktemp -d)"
 
   ensure_source_local_or_switch_to_remote "$SCRIPT_DIR"
   if [ "$SOURCE" = "remote" ]; then
-    download_release "$staging"
+    download_release "$STAGING"
   else
     info "copying local tree to staging"
     rsync -a --delete \
       --exclude node_modules --exclude .git --exclude '__pycache__' \
       --exclude 'src/**/*.map' --exclude '*.tar.gz' \
-      "$SCRIPT_DIR/" "$staging/"
+      "$SCRIPT_DIR/" "$STAGING/"
   fi
 
   info "ensuring remote plugin dir exists on $host"
   ssh_run "$host" "mkdir -p '$PLUGIN_DIR_DEFAULT'"
   info "syncing to $host:$PLUGIN_DIR_DEFAULT"
-  rsync -az --delete "$staging/" "$host:$PLUGIN_DIR_DEFAULT/"
+  rsync -az --delete "$STAGING/" "$host:$PLUGIN_DIR_DEFAULT/"
   info "restarting Decky on $host"
   ssh_run "$host" "sudo -n systemctl restart $SERVICE 2>/dev/null || systemctl --user restart $SERVICE || true"
   ok "installed on $host"
@@ -181,11 +188,9 @@ local_install() {
 
   ensure_source_local_or_switch_to_remote "$SCRIPT_DIR"
   if [ "$SOURCE" = "remote" ]; then
-    local staging
-    staging="$(mktemp -d)"
-    trap 'rm -rf "$staging"' EXIT
-    download_release "$staging"
-    copy_plugin "$staging" "$PLUGIN_DIR_DEFAULT"
+    STAGING="$(mktemp -d)"
+    download_release "$STAGING"
+    copy_plugin "$STAGING" "$PLUGIN_DIR_DEFAULT"
   else
     copy_plugin "$SCRIPT_DIR" "$PLUGIN_DIR_DEFAULT"
   fi
