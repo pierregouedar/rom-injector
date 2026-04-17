@@ -24,19 +24,23 @@ Optional SteamGridDB integration fetches grid / hero / logo / icon artwork autom
 
 The installer needs only `curl` (or `wget`), `tar`, and `systemctl` — **no node / npm / pnpm required on the Deck**. Prebuilt release tarballs are published on GitHub Releases via CI.
 
-### One-liner (pulls the latest release on the Deck, in Desktop Mode)
+### One-liner — after a release exists
 
-```bash
-curl -L https://github.com/pierregouedar/rom-injector/releases/latest/download/install.sh -o /tmp/rom-injector-install.sh \
+```sh
+curl -fSL https://github.com/pierregouedar/rom-injector/releases/latest/download/install.sh -o /tmp/rom-injector-install.sh \
   && sh /tmp/rom-injector-install.sh --remote
 ```
 
-The link above redirects to whichever version is currently tagged **latest** on GitHub — no manual bumping needed. The script fetches the matching tarball the same way. If you haven't published a release yet, fall back to the `main` branch script:
+`/releases/latest/download/install.sh` redirects to the installer attached to whichever version is tagged **latest**, so the link never needs bumping. **The `-fSL` flag is load-bearing** — without `-f`, curl silently saves the GitHub 404 body if no release exists, and running it produces misleading errors like `Not: command not found`.
 
-```bash
-curl -L https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh -o /tmp/rom-injector-install.sh \
+### Before the first release (raw `main` fallback)
+
+```sh
+curl -fSL https://raw.githubusercontent.com/pierregouedar/rom-injector/main/install.sh -o /tmp/rom-injector-install.sh \
   && sh /tmp/rom-injector-install.sh --remote
 ```
+
+(This one-liner works as soon as the repo has an `install.sh` on `main`, even before any tag / release.)
 
 ### From a clone
 
