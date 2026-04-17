@@ -42,7 +42,7 @@ function notify(
 }
 
 function Content() {
-  const { cfg, dirty, mutate, persist, reset, replace, loadError } = useConfig();
+  const { cfg, dirty, mutate, persist, reset, replace, loadError, saveError, saving } = useConfig();
   const { report: validation, refresh: refreshValidation } = useValidation();
   const { preview, scan, clear: clearPreview } = usePreview();
   const { progress, undoCount, runSync, cleanStale, undoLast } = useSync();
@@ -228,6 +228,20 @@ function Content() {
   return (
     <>
       <LanguagePanel lang={lang} onChange={(l) => mutate({ language: l })} t={t} />
+
+      <PanelSection title="Autosave">
+        <PanelSectionRow>
+          <div style={{ fontSize: 11, opacity: 0.8 }}>
+            {saveError
+              ? <span style={{ color: "#f66" }}>save failed: {saveError}</span>
+              : saving
+                ? "saving…"
+                : dirty
+                  ? "unsaved changes"
+                  : "all changes saved"}
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
 
       <RootsEditor    roots={cfg.roots}       onChange={(roots) => mutate({ roots })}       t={t} validation={validation} />
       <ProfilesEditor profiles={cfg.profiles} onChange={(profiles) => mutate({ profiles })} t={t} validation={validation} />
