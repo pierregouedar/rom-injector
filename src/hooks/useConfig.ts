@@ -5,12 +5,19 @@ import { detectLang, Lang } from "../i18n";
 export function useConfig() {
   const [cfg, setCfg]     = useState<Cfg | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    getConfig().then((c) => {
-      if (!c.language) c.language = detectLang();
-      setCfg(c);
-    });
+    getConfig()
+      .then((c) => {
+        if (!c.language) c.language = detectLang();
+        setCfg(c);
+      })
+      .catch((e) => {
+        const msg = String(e?.message ?? e);
+        console.error("[rom-injector] get_config failed", e);
+        setLoadError(msg);
+      });
   }, []);
 
   const mutate = (patch: Partial<Cfg>) => {
@@ -40,5 +47,5 @@ export function useConfig() {
     setDirty(false);
   };
 
-  return { cfg, dirty, mutate, persist, reset, replace, setDirty };
+  return { cfg, dirty, mutate, persist, reset, replace, setDirty, loadError };
 }

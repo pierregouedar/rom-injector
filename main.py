@@ -1,21 +1,36 @@
 import json
 import socket
+import traceback
 import urllib.request
 from pathlib import Path
 
 import decky
 
-import config as cfg_mod
-import logs as logs_mod
-import sgdb
-from scanner import find_artwork, profiles_index, scan_root, unquote
+# Import siblings with a belt-and-braces try so Decky surfaces the real error
+# instead of a silent "backend never replies" Loading state.
+_IMPORT_ERROR: str | None = None
+try:
+    import config as cfg_mod
+    import logs as logs_mod
+    import sgdb
+    from scanner import find_artwork, profiles_index, scan_root, unquote
+    logs_mod.install()
+except Exception as _e:
+    _IMPORT_ERROR = f"{type(_e).__name__}: {_e}\n{traceback.format_exc()}"
+    decky.logger.error(f"rom-injector import failed: {_IMPORT_ERROR}")
 
-logs_mod.install()
+
+def _raise_if_import_failed() -> None:
+    if _IMPORT_ERROR:
+        raise RuntimeError(f"rom-injector backend failed to import: {_IMPORT_ERROR}")
 
 
 class Plugin:
     async def _main(self):
-        decky.logger.info("rom-injector backend up")
+        if _IMPORT_ERROR:
+            decky.logger.error(f"rom-injector import error at _main: {_IMPORT_ERROR}")
+        else:
+            decky.logger.info("rom-injector backend up")
 
     async def _unload(self):
         decky.logger.info("rom-injector backend down")
@@ -23,6 +38,7 @@ class Plugin:
     # ── config ──
 
     async def get_config(self) -> dict:
+        _raise_if_import_failed()
         return cfg_mod.load()
 
     async def save_config(self, config: dict) -> dict:

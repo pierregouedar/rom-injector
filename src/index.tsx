@@ -42,7 +42,7 @@ function notify(
 }
 
 function Content() {
-  const { cfg, dirty, mutate, persist, reset, replace } = useConfig();
+  const { cfg, dirty, mutate, persist, reset, replace, loadError } = useConfig();
   const { report: validation, refresh: refreshValidation } = useValidation();
   const { preview, scan, clear: clearPreview } = usePreview();
   const { progress, undoCount, runSync, cleanStale, undoLast } = useSync();
@@ -55,6 +55,18 @@ function Content() {
   const lang: Lang = cfg?.language ?? "en";
   const t = useMemo(() => makeT(lang), [lang]);
 
+  if (loadError) {
+    return (
+      <PanelSection title="Backend error">
+        <PanelSectionRow>
+          <div style={{ fontSize: 11, fontFamily: "monospace", whiteSpace: "pre-wrap", color: "#f66" }}>
+            get_config failed:{"\n"}{loadError}
+            {"\n\n"}Check: sudo journalctl -u plugin_loader -n 200 | grep -iE "rom|error|traceback"
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
+    );
+  }
   if (!cfg) return <PanelSection title={t("loading")} />;
 
   const savePersist = async () => {
